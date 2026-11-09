@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Sparkles } from "lucide-react";
 import { defaultProjectData } from "@/lib/constants";
-import { ProjectUpdateInput, ProjectUpdateSchema, AnalysisResultSchema } from "@/lib/schemas";
+import { ProjectUpdateInput, ProjectUpdateSchema, AnalysisResultSchema, SHORT_TEXT_MAX, NARRATIVE_TEXT_MAX } from "@/lib/schemas";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,9 +79,9 @@ export default function ProjectUpdateFormPage() {
               <div key={field.name} className={field.type === "textarea" ? "md:col-span-2" : ""}>
                 <Label htmlFor={field.name}>{field.label}</Label>
                 {field.type === "textarea" ? (
-                  <Textarea id={field.name} className="mt-2" {...form.register(field.name)} />
+                  <Textarea id={field.name} maxLength={NARRATIVE_TEXT_MAX} className="mt-2" {...form.register(field.name)} />
                 ) : (
-                  <Input id={field.name} className="mt-2" {...form.register(field.name)} />
+                  <Input id={field.name} maxLength={SHORT_TEXT_MAX} className="mt-2" {...form.register(field.name)} />
                 )}
                 {error ? <p className="mt-1 text-xs text-red-300">{error}</p> : null}
               </div>
