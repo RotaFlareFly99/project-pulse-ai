@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] },
+    "outDir": ".test-build"
+  },
+  "include": ["lib/analyze-handler.ts", "lib/schemas.ts", "lib/stored-report.ts", "lib/constants.ts"]
+}

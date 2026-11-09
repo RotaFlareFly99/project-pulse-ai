@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Download, RefreshCw } from "lucide-react";
-import { AnalysisResult, AnalysisResultSchema, ProjectUpdateInput, ProjectUpdateSchema } from "@/lib/schemas";
+import { AnalysisResult, ProjectUpdateInput } from "@/lib/schemas";
+import { readStoredReport } from "@/lib/stored-report";
 import { buildReportText } from "@/lib/report";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,14 +17,12 @@ export default function ResultsPage() {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    const rawInput = sessionStorage.getItem("pulseInput");
-    const rawAnalysis = sessionStorage.getItem("pulseAnalysis");
-
-    const parsedInput = ProjectUpdateSchema.safeParse(rawInput ? JSON.parse(rawInput) : null);
-    const parsedAnalysis = AnalysisResultSchema.safeParse(rawAnalysis ? JSON.parse(rawAnalysis) : null);
-
-    if (parsedInput.success) setInput(parsedInput.data);
-    if (parsedAnalysis.success) setAnalysis(parsedAnalysis.data);
+    try {
+      const stored = readStoredReport(sessionStorage);
+      if (stored) { setInput(stored.input); setAnalysis(stored.analysis); }
+    } catch {
+      // Accessing sessionStorage itself can fail in restricted browser contexts.
+    }
   }, []);
 
   const reportText = useMemo(() => {
