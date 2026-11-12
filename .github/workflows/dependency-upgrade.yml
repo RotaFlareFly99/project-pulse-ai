@@ -14,7 +14,7 @@ on:
       - .github/workflows/dependency-upgrade.yml
 
 permissions:
-  contents: write # Temporary: scoped lockfile commit on approved upgrade branch; revert to read after generation.
+  contents: read
 
 jobs:
   validate:
@@ -33,11 +33,8 @@ jobs:
         run: |
           node --version
           npm --version
-      - name: Resolve lockfile if missing
-        run: |
-          if [ ! -f package-lock.json ]; then
-            npm install --package-lock-only --no-audit --no-fund
-          fi
+      - name: Require committed lockfile
+        run: test -f package-lock.json
       - uses: actions/upload-artifact@v4
         with:
           name: candidate-package-lock
@@ -45,16 +42,6 @@ jobs:
           if-no-files-found: error
       - name: Clean install with peer checks
         run: npm ci --no-audit --no-fund
-      - name: Commit generated lockfile to approved upgrade branch
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'chore/next16-react19-dependency-upgrade-2026-11-12' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- package-lock.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(deps): commit npm-resolved strict-peer lockfile"
-            git push origin HEAD:refs/heads/chore/next16-react19-dependency-upgrade-2026-11-12
-          fi
       - name: TypeScript
         run: npm run typecheck
       - name: ESLint
