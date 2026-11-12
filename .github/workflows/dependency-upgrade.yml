@@ -1,0 +1,57 @@
+name: Dependency upgrade verification
+
+on:
+  pull_request:
+    branches:
+      - security/analyze-hardening-2026-11-09
+    paths:
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - .nvmrc
+      - eslint.config.mjs
+      - .eslintrc.json
+      - .github/workflows/dependency-upgrade.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Record tool versions
+        run: |
+          node --version
+          npm --version
+      - name: Resolve lockfile if missing
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only --no-audit --no-fund
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-package-lock
+          path: package-lock.json
+          if-no-files-found: error
+      - name: Clean install with peer checks
+        run: npm ci --no-audit --no-fund
+      - name: TypeScript
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint
+      - name: Application tests
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: HTTP smoke tests
+        run: npm run test:smoke
+      - name: Production dependency audit
+        run: npm audit --omit=dev
